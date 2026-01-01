@@ -1,6 +1,8 @@
 #!/Users/shahzadali/Github/Agentic_AI_FinOps_Bedrock_AgentCore/pyvenv/bin/python
 # ============================================
 # Enhanced Finance Web App with Real Financial Data APIs
+# Single File App
+# This is the starting point before making a full stack app
 # ============================================
 """
 Enhanced web app that uses AgentCore with real financial data from free APIs
