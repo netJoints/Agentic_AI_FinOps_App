@@ -1,0 +1,21 @@
+# Agent framework dependencies
+anthropic>=0.34.0
+pydantic>=2.0.0
+strands-agents==1.7.1
+strands-agents-tools==0.2.6
+
+
+# Logging and utilities
+python-json-logger>=2.0.0
+
+boto3>=1.40.13
+fastapi>=0.116.1
+uvicorn>=0.35.0
+bedrock-agentcore>=0.1.2
+bedrock-agentcore-starter-toolkit>=0.1.6
+typing
+botocore
+nova_act
+flask 
+flask-session 
+authlib

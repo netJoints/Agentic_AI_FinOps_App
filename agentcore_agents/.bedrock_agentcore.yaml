@@ -1,0 +1,170 @@
+default_agent: finops_compliance_ai_agent
+agents:
+  finops_supervisor_ai_agent:
+    name: finops_supervisor_ai_agent
+    entrypoint: finops_supervisor_ai_agent.py
+    platform: linux/arm64
+    container_runtime: none
+    aws:
+      execution_role: arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad
+      execution_role_auto_create: true
+      account: '513826297540'
+      region: us-west-2
+      ecr_repository: 513826297540.dkr.ecr.us-west-2.amazonaws.com/bedrock-agentcore-finops_supervisor_ai_agent
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: finops_supervisor_ai_agent-QJhB67D4O4
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:513826297540:runtime/finops_supervisor_ai_agent-QJhB67D4O4
+      agent_session_id: 74514430-a5c6-4a86-b00f-48760d6cb8d3
+    codebuild:
+      project_name: bedrock-agentcore-finops_supervisor_ai_agent-builder
+      execution_role: arn:aws:iam::513826297540:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-4e93752fa7
+      source_bucket: bedrock-agentcore-codebuild-sources-513826297540-us-west-2
+    authorizer_configuration: null
+    oauth_configuration: null
+  finops_fraud_ai_agent:
+    name: finops_fraud_ai_agent
+    entrypoint: finops_fraud_ai_agent.py
+    platform: linux/arm64
+    container_runtime: none
+    aws:
+      execution_role: arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad
+      execution_role_auto_create: true
+      account: '513826297540'
+      region: us-west-2
+      ecr_repository: 513826297540.dkr.ecr.us-west-2.amazonaws.com/bedrock-agentcore-finops_fraud_ai_agent
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: finops_fraud_ai_agent-cTzcGF6lW7
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:513826297540:runtime/finops_fraud_ai_agent-cTzcGF6lW7
+      agent_session_id: 8cb2450a-32d0-4eea-b306-e78d4eee9f68
+    codebuild:
+      project_name: null
+      execution_role: null
+      source_bucket: null
+    authorizer_configuration: null
+    oauth_configuration: null
+  finops-compliance-ai-agent:
+    name: finops-compliance-ai-agent
+    entrypoint: finops-compliance-ai-agent.py
+    platform: linux/arm64
+    container_runtime: docker
+    aws:
+      execution_role: arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad
+      execution_role_auto_create: false
+      account: '513826297540'
+      region: us-west-2
+      ecr_repository: 513826297540.dkr.ecr.us-west-2.amazonaws.com/finops-compliance-ai-agent
+      ecr_auto_create: true
+      network_configuration:
+        network_mode: PUBLIC
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: null
+      agent_arn: null
+      agent_session_id: null
+    codebuild:
+      project_name: null
+      execution_role: arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad
+      source_bucket: null
+    authorizer_configuration: null
+    oauth_configuration: null
+  finops-risk-ai-agent:
+    name: finops-risk-ai-agent
+    entrypoint: finops-risk-ai-agent.py
+    platform: linux/arm64
+    container_runtime: docker
+    aws:
+      execution_role: arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad
+      execution_role_auto_create: false
+      account: '513826297540'
+      region: us-west-2
+      ecr_repository: 513826297540.dkr.ecr.us-west-2.amazonaws.com/finops-risk-ai-agent
+      ecr_auto_create: true
+      network_configuration:
+        network_mode: PUBLIC
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: null
+      agent_arn: null
+      agent_session_id: null
+    codebuild:
+      project_name: null
+      execution_role: arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad
+      source_bucket: null
+    authorizer_configuration: null
+    oauth_configuration: null
+  finops_risk_ai_agent:
+    name: finops_risk_ai_agent
+    entrypoint: finops_risk_ai_agent.py
+    platform: linux/arm64
+    container_runtime: none
+    aws:
+      execution_role: arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad
+      execution_role_auto_create: true
+      account: '513826297540'
+      region: us-west-2
+      ecr_repository: 513826297540.dkr.ecr.us-west-2.amazonaws.com/bedrock-agentcore-finops_risk_ai_agent
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: finops_risk_ai_agent-W2U22y3F6H
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:513826297540:runtime/finops_risk_ai_agent-W2U22y3F6H
+      agent_session_id: null
+    codebuild:
+      project_name: bedrock-agentcore-finops_risk_ai_agent-builder
+      execution_role: arn:aws:iam::513826297540:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-0bb86cd5be
+      source_bucket: bedrock-agentcore-codebuild-sources-513826297540-us-west-2
+    authorizer_configuration: null
+    oauth_configuration: null
+  finops_compliance_ai_agent:
+    name: finops_compliance_ai_agent
+    entrypoint: finops_compliance_ai_agent.py
+    platform: linux/arm64
+    container_runtime: none
+    aws:
+      execution_role: arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad
+      execution_role_auto_create: true
+      account: '513826297540'
+      region: us-west-2
+      ecr_repository: 513826297540.dkr.ecr.us-west-2.amazonaws.com/bedrock-agentcore-finops_compliance_ai_agent
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: finops_compliance_ai_agent-lCD0fT7TCE
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:513826297540:runtime/finops_compliance_ai_agent-lCD0fT7TCE
+      agent_session_id: null
+    codebuild:
+      project_name: bedrock-agentcore-finops_compliance_ai_agent-builder
+      execution_role: arn:aws:iam::513826297540:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-a7dd4406b0
+      source_bucket: bedrock-agentcore-codebuild-sources-513826297540-us-west-2
+    authorizer_configuration: null
+    oauth_configuration: null

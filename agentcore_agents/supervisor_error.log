@@ -1,0 +1,7 @@
+Payload:
+{
+  "prompt": "hello supervisor agent"
+}
+Invoking BedrockAgentCore agent 'finops_supervisor_ai_agent' via cloud endpoint
+❌ Invocation failed: An error occurred (RuntimeClientError) when calling the InvokeAgentRuntime operation: An error occurred when starting the runtime. Please check 
+your CloudWatch logs for more information.

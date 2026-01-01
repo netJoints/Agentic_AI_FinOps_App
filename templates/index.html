@@ -1,0 +1,86 @@
+<!-- ============================================ -->
+<!-- templates/index.html -->
+<!-- ============================================ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance AI Multi-Agent System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Finance AI Multi-Agent System</h1>
+            <p>Powered by Amazon Bedrock AgentCore with Real-Time Financial Data</p>
+        </div>
+        
+        <div class="dashboard" id="dashboard">
+            <div class="stat-card">
+                <h3>📈 Stock Price (AAPL)</h3>
+                <div class="value" id="stockPrice">--</div>
+                <div class="change" id="stockChange">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <h3>🔍 High-Risk Transactions</h3>
+                <div class="value" id="riskCount">--</div>
+                <div class="change">Last 24 hours</div>
+            </div>
+            <div class="stat-card">
+                <h3>✅ Compliance Score</h3>
+                <div class="value" id="complianceScore">--</div>
+                <div class="change positive">SOX Compliant</div>
+            </div>
+            <div class="stat-card">
+                <h3>⚠️ Active Alerts</h3>
+                <div class="value" id="alertCount">--</div>
+                <div class="change">Requires review</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="input-section">
+                <textarea id="queryInput" placeholder="Enter your financial analysis query..."></textarea>
+                
+                <div class="examples">
+                    <h3>💡 Example queries:</h3>
+                    <span class="example-query" onclick="setQuery('We noticed some unusual activity in our recent transactions. Can you analyze them for potential fraud patterns?')">🔍 Analyze suspicious transactions</span>
+                    <span class="example-query" onclick="setQuery('Our audit is coming up next month. Can you check if we are compliant with SOX, PCI-DSS, and AML regulations?')">✅ Check compliance status</span>
+                    <span class="example-query" onclick="setQuery('I just invested $100k - 60% went into SPY, 30% into AVGO, and 10% into Cisco stock. Can you tell me what my Value at Risk is for one month?')">📊 Calculate portfolio risk</span>
+                    <span class="example-query" onclick="setQuery('My client has a $250,000 portfolio with mixed equities and bonds. What are the key fraud risk indicators we should monitor?')">⚠️ Fraud risk assessment</span>
+                </div>
+                
+                <div class="session-info">
+                    <strong>Session ID:</strong> <span id="sessionId"></span>
+                    <span class="refresh-btn" onclick="loadDashboard()">🔄 Refresh Data</span>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="analyzeQuery()" id="analyzeBtn">
+                    🚀 Analyze with AI Agents
+                </button>
+                <button class="btn-secondary" onclick="clearResults()">
+                    🔄 Clear
+                </button>
+            </div>
+        </div>
+        
+        <div class="card response-section" id="responseSection">
+            <div class="response-header">
+                <div class="response-title">📊 Analysis Results</div>
+                <div class="agents-badge" id="agentsBadge"></div>
+            </div>
+            <div class="response-content" id="responseContent"></div>
+        </div>
+        
+        <div class="card loading" id="loadingSection" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing with AI agents and real-time data...</p>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
