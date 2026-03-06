@@ -164,7 +164,7 @@ def monitor_agent_progress(agent_name: str, status: str) -> str:
 def create_agent():
     """Create the Supervisor Agent"""
     bedrock_model = BedrockModel(
-        model_id="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model_id="us.anthropic.claude-sonnet-4-5-20250929-v1:0",
         temperature=0.0,
     )
     
@@ -215,14 +215,20 @@ You are the strategic coordinator ensuring comprehensive, accurate financial ana
     return agent
 
 # Create the agent instance
-agent = create_agent()
+_agent = None
+
+def get_agent():
+    global _agent
+    if _agent is None:
+        _agent = create_agent()
+    return _agent
 
 # Define the entrypoint for AgentCore
 @app.entrypoint
 def invoke(payload):
     """Process user input and return a response"""
     user_message = payload.get("prompt", "No prompt provided")
-    result = agent(user_message)
+    result = get_agent()(user_message)
     return {"result": result.message}
 
 # For local testing

@@ -1,10 +1,20 @@
 #!/bin/bash
 
+# Load .env from project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/../.env"
+if [ -f "$ENV_FILE" ]; then
+  set -a && source "$ENV_FILE" && set +a
+  echo "✅ Loaded .env"
+else
+  echo "⚠️  No .env file found at $ENV_FILE — using existing environment variables"
+fi
+
 # Step 1: Checkout AWS profile (writes to ~/.aws/credentials under [agentic-ai])
-pybritive checkout "aws_standalone_app_513826297540/513826297540 (aws_standalone_app_513826297540_environment)/AWS Admin Full Access" -t agentic-ai
+pybritive checkout "${BRITIVE_CHECKOUT_PROFILE}" -t "${BRITIVE_TENANT}"
 
 # Step 2: Also extract and export credentials as environment variables
-CREDS_JSON=$(pybritive checkout "aws_standalone_app_513826297540/513826297540 (aws_standalone_app_513826297540_environment)/AWS Admin Full Access" -t agentic-ai)
+CREDS_JSON=$(pybritive checkout "${BRITIVE_CHECKOUT_PROFILE}" -t "${BRITIVE_TENANT}")
 AWS_ACCESS_KEY_ID=$(echo "$CREDS_JSON" | jq -r '.AccessKeyId')
 AWS_SECRET_ACCESS_KEY=$(echo "$CREDS_JSON" | jq -r '.SecretAccessKey')
 AWS_SESSION_TOKEN=$(echo "$CREDS_JSON" | jq -r '.SessionToken')

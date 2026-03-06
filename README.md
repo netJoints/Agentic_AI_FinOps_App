@@ -1,339 +1,256 @@
-# Multi-Agent Finance Operations System Deployment Guide
+# FinOps AI Multi-Agent System
 
-## 🏗️ Architecture Overview
+Enterprise-grade financial analysis platform powered by Amazon Bedrock AgentCore with real-time data.
 
-### Hierarchical Supervisor Architecture
+## 🏗️ Architecture
 
 ```
-                    ┌─────────────────────┐
-                    │  Supervisor Agent   │
-                    │  (Orchestrator)     │
-                    └──────────┬──────────┘
-                               │
-                ┌──────────────┼──────────────┐
-                │              │              │
-        ┌───────▼──────┐ ┌────▼─────┐ ┌─────▼──────┐
-        │    Fraud     │ │Compliance│ │    Risk    │
-        │  Detection   │ │  Agent   │ │  Analysis  │
-        └──────────────┘ └──────────┘ └────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         User Interface                          │
+│                    (Flask + HTML/CSS/JS)                        │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                         Flask API                               │
+│                     /api/analyze                                │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+          ┌───────────────────┼───────────────────┐
+          ▼                   ▼                   ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│  Britive Client │  │  AgentCore      │  │  Financial Data │
+│  (AWS Creds)    │  │  Client         │  │  Service        │
+└────────┬────────┘  └────────┬────────┘  └────────┬────────┘
+         │                    │                    │
+         ▼                    ▼                    ▼
+┌─────────────────┐  ┌─────────────────────────────────────┐
+│  AWS STS        │  │        Bedrock AgentCore            │
+│  (JIT Creds)    │  │  ┌──────────┬──────────┬──────────┐ │
+└─────────────────┘  │  │  Fraud   │Compliance│   Risk   │ │
+                     │  │  Agent   │  Agent   │  Agent   │ │
+                     │  └──────────┴──────────┴──────────┘ │
+                     └─────────────────────────────────────┘
 ```
 
-### Supervisor Agent Responsibilities
+## 📁 Project Structure
 
-1. **Task Decomposition**: Breaks complex queries into subtasks
-2. **Agent Orchestration**: Determines which specialists to invoke
-3. **Execution Coordination**: Manages sequence and flow
-4. **Result Aggregation**: Synthesizes outputs into actionable insights
-5. **Conflict Resolution**: Identifies and resolves discrepancies
-6. **Quality Assurance**: Ensures comprehensive analysis
+```
+finops_fixed/
+├── app.py                      # Main Flask application
+├── config.py                   # Configuration (agents, AWS, etc.)
+├── requirements.txt            # Python dependencies
+├── services/
+│   ├── __init__.py
+│   ├── agentcore_client.py     # AgentCore API client
+│   ├── britive_client.py       # Britive credential manager
+│   └── financial_data.py       # Yahoo Finance + sample data
+├── routes/
+│   ├── __init__.py
+│   ├── api.py                  # REST API endpoints
+│   └── views.py                # Web page routes
+├── templates/
+│   └── index.html              # Main dashboard UI
+└── static/
+    ├── css/
+    │   └── styles.css          # Dashboard styles
+    └── js/
+        └── main.js             # Frontend JavaScript
+```
 
-## 📋 Prerequisites
+## 🚀 Quick Start
 
-1. AWS Account with Bedrock access
-2. Britive credentials configured
-3. Python 3.12+ with virtual environment
-4. Required packages installed:
-   ```bash
-   pip install flask flask-cors boto3 pybritive yfinance bedrock-agentcore bedrock-agentcore-starter-toolkit strands-agents
-   ```
-
-## 🚀 Step-by-Step Deployment
-
-### Step 1: Verify Configuration
+### 1. Install Dependencies
 
 ```bash
-# Check if config file exists
-cat .bedrock_agentcore.yaml
-
-# List configured agents
-agentcore configure list
+cd finops_fixed
+pip install -r requirements.txt
 ```
 
-You should see 4 agents:
-- supervisor_agent (Orchestrator)
-- fraud_agent (Fraud Detection)
-- compliance_agent (Compliance Monitoring)
-- risk_agent (Risk Analysis)
+### 2. Configure Agents
 
-### Step 2: Deploy Agents
-
-Deploy in this order (Supervisor first, then specialists):
-
-```bash
-# 1. Deploy Supervisor Agent
-agentcore launch --agent supervisor_agent
-# Wait for completion, note the agent_id and alias_id
-
-# 2. Deploy Fraud Detection Agent
-agentcore launch --agent fraud_agent
-# Wait for completion
-
-# 3. Deploy Compliance Agent
-agentcore launch --agent compliance_agent
-# Wait for completion
-
-# 4. Deploy Risk Analysis Agent
-agentcore launch --agent risk_agent
-# Wait for completion
-```
-
-### Step 3: Verify Deployment
-
-```bash
-# Check status of all agents
-agentcore status
-
-# You should see output with agent_id and agent_arn for each
-```
-
-### Step 4: Update Web Application
-
-Copy the agent IDs and alias IDs from the status command and update `finance_webapp.py`:
+Update `config.py` with your deployed agent ARNs:
 
 ```python
 AGENTS = {
-    "supervisor": {
-        "agent_id": "supervisor_agent-XXXXXXXXXX",  # From agentcore status
-        "alias_id": "TSTALIASID"  # Or your actual alias ID
-    },
     "fraud_detection": {
-        "agent_id": "fraud_agent-XXXXXXXXXX",
-        "alias_id": "TSTALIASID"
+        "agent_id": "your-fraud-agent-id",
+        "agent_arn": "arn:aws:bedrock-agentcore:us-west-2:YOUR_ACCOUNT:runtime/your-fraud-agent-id"
     },
-    "compliance": {
-        "agent_id": "compliance_agent-XXXXXXXXXX",
-        "alias_id": "TSTALIASID"
-    },
-    "risk_analysis": {
-        "agent_id": "risk_agent-XXXXXXXXXX",
-        "alias_id": "TSTALIASID"
-    }
+    # ... other agents
 }
 ```
 
-### Step 5: Install yfinance (for real financial data)
+### 3. Configure Britive
+
+Update the Britive profile in `config.py`:
+
+```python
+BRITIVE_PROFILE = "your-britive-profile"
+BRITIVE_TENANT = "your-tenant"
+```
+
+### 4. Run the Application
+
+```bash
+python app.py
+```
+
+Visit: **http://localhost:5011**
+
+## 🔧 API Endpoints
+
+### `POST /api/analyze`
+
+Submit a query for AI agent analysis.
+
+**Request:**
+```json
+{
+    "query": "Analyze recent transactions for fraud patterns",
+    "session_id": "optional-session-id"
+}
+```
+
+**Response:**
+```json
+{
+    "success": true,
+    "response": "Combined agent responses...",
+    "agents_invoked": ["fraud_detection", "compliance"],
+    "session_id": "session-123"
+}
+```
+
+### `GET /api/financial-data`
+
+Get real-time financial data.
+
+**Parameters:**
+- `type`: `stock`, `ratios`, `multiple`, `transactions`, `compliance`, `market`
+- `symbol`: Stock ticker (default: AAPL)
+
+**Example:**
+```bash
+curl "http://localhost:5011/api/financial-data?type=stock&symbol=MSFT"
+```
+
+### `GET /api/health`
+
+Health check endpoint.
+
+### `GET /api/agents`
+
+List configured agents and their status.
+
+### `GET /api/test-credentials`
+
+Test Britive credential checkout (for debugging).
+
+## 🤖 Agent Types
+
+| Agent | Keywords | Purpose |
+|-------|----------|---------|
+| **fraud_detection** | fraud, transaction, suspicious, anomaly | Analyze transactions for fraud |
+| **compliance** | compliance, sox, pci, regulation, audit | Check regulatory compliance |
+| **risk_analysis** | risk, var, portfolio, volatility | Calculate portfolio risk |
+
+## 🔑 Authentication Flow
+
+1. User submits query via UI
+2. Flask API calls Britive to checkout AWS credentials
+3. Britive returns temporary STS credentials
+4. AgentCore client uses credentials to invoke agents
+5. Credentials are checked back in after request
+
+## ⚙️ Configuration Options
+
+### Environment Variables
+
+```bash
+# AWS
+AWS_REGION=us-west-2
+AWS_ACCOUNT_ID=your-account-id
+
+# Britive
+BRITIVE_PROFILE=your-profile
+BRITIVE_TENANT=your-tenant
+
+# Agents (override config.py)
+SUPERVISOR_AGENT_ID=your-supervisor-id
+FRAUD_AGENT_ID=your-fraud-id
+COMPLIANCE_AGENT_ID=your-compliance-id
+RISK_AGENT_ID=your-risk-id
+
+# Flask
+PORT=5011
+FLASK_DEBUG=true
+```
+
+## 🧪 Testing
+
+### Test Financial Data Service
+
+```bash
+curl http://localhost:5011/api/financial-data?type=stock&symbol=AAPL
+curl http://localhost:5011/api/financial-data?type=transactions
+curl http://localhost:5011/api/financial-data?type=compliance
+```
+
+### Test Credentials
+
+```bash
+curl http://localhost:5011/api/test-credentials
+```
+
+### Test Analysis
+
+```bash
+curl -X POST http://localhost:5011/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Check SOX compliance status"}'
+```
+
+## 🐛 Troubleshooting
+
+### "pybritive not found"
+
+Install pybritive:
+```bash
+pip install pybritive
+```
+
+### "Failed to checkout AWS credentials"
+
+1. Verify Britive profile name in config
+2. Ensure pybritive is logged in: `pybritive login`
+3. Check profile permissions
+
+### "Agent not found"
+
+1. Verify agent ARNs in config.py
+2. Ensure agents are deployed and running
+3. Check IAM permissions for invoking agents
+
+### "yfinance not installed"
 
 ```bash
 pip install yfinance
 ```
 
-### Step 6: Run the Web Application
+## 📝 Changelog
 
-```bash
-python finance_webapp.py
-```
+### v2.0.0 (Fixed)
+- Fixed Britive client to properly parse and use credentials
+- Fixed AgentCore client to use correct boto3 client
+- Added credential verification
+- Added comprehensive error handling
+- Added health check and test endpoints
+- Improved logging throughout
 
-Access at: **http://localhost:5001**
+### v1.0.0 (Original)
+- Initial implementation
 
-## 🎯 How It Works
+## 📄 License
 
-### Request Flow
-
-1. **User Query** → Web Interface
-2. **Supervisor Agent** receives query
-   - Analyzes intent
-   - Decomposes into subtasks
-   - Creates execution plan
-3. **Specialist Agents** invoked based on plan
-   - Fraud Agent: Transaction analysis
-   - Compliance Agent: Regulatory checks
-   - Risk Agent: Portfolio risk calculations
-4. **Supervisor Agent** aggregates results
-   - Synthesizes findings
-   - Identifies cross-functional insights
-   - Provides actionable recommendations
-5. **Final Report** → User
-
-### Example Query Flow
-
-**Query**: "Analyze recent suspicious transactions and check compliance status"
-
-1. Supervisor decomposes:
-   - Subtask 1: Fraud detection on transactions
-   - Subtask 2: Compliance status review
-
-2. Supervisor routes:
-   - fraud_agent → Analyzes transaction patterns
-   - compliance_agent → Reviews regulatory status
-
-3. Supervisor aggregates:
-   - Synthesizes both reports
-   - Identifies if fraud has compliance implications
-   - Provides unified recommendations
-
-## 🔧 Troubleshooting
-
-### Agent Not Deploying
-
-```bash
-# Check AWS credentials
-aws sts get-caller-identity
-
-# Or use Britive
-pybritive checkout "AWS SE Demo/Britive Agentic AI Solution/Admin" -t demo
-```
-
-### Configuration Errors
-
-```bash
-# Validate YAML syntax
-python -c "import yaml; yaml.safe_load(open('.bedrock_agentcore.yaml'))"
-```
-
-### Agent Invocation Fails
-
-```bash
-# Check agent status
-agentcore status
-
-# Test individual agent
-agentcore invoke --agent supervisor_agent --input "Test query"
-```
-
-## 📊 Architecture Benefits
-
-### Hierarchical Supervision Advantages
-
-1. **Intelligent Task Decomposition**
-   - Complex queries automatically broken down
-   - Optimal agent selection
-   - Parallel or sequential execution based on dependencies
-
-2. **Centralized Coordination**
-   - Single point of orchestration
-   - Consistent workflow management
-   - Better error handling
-
-3. **Cross-Functional Insights**
-   - Supervisor identifies patterns across specialist reports
-   - Resolves conflicts between agents
-   - Provides holistic recommendations
-
-4. **Scalability**
-   - Easy to add new specialist agents
-   - Supervisor adapts routing logic
-   - No changes needed to specialist agents
-
-5. **Quality Assurance**
-   - Supervisor validates completeness
-   - Ensures all relevant analyses performed
-   - Aggregates with context awareness
-
-## 🎓 Testing Queries
-
-Try these to see the supervisor in action:
-
-1. **Multi-Domain Query**:
-   ```
-   Analyze suspicious transactions, check SOX compliance, and calculate portfolio risk for high-risk accounts
-   ```
-   → Supervisor invokes all three specialists
-
-2. **Fraud + Compliance**:
-   ```
-   Identify fraudulent activities and assess regulatory implications
-   ```
-   → Supervisor coordinates fraud and compliance agents, then synthesizes findings
-
-3. **Comprehensive Analysis**:
-   ```
-   Provide a complete financial health assessment including fraud, compliance, and risk
-   ```
-   → Supervisor orchestrates full analysis pipeline
-
-## 📈 Monitoring
-
-### View Agent Logs
-
-```bash
-# CloudWatch logs
-aws logs tail /aws/bedrock-agentcore/supervisor_agent --follow
-
-# Check specific agent
-agentcore status --agent fraud_agent
-```
-
-### Performance Metrics
-
-The supervisor tracks:
-- Task decomposition time
-- Individual agent execution time
-- Aggregation and synthesis time
-- Total end-to-end latency
-
-## 🔐 Security
-
-- Britive provides just-in-time credential management
-- Agents have least-privilege IAM roles
-- Network isolation via VPC configuration
-- Encryption at rest and in transit
-
-## 🎉 Success!
-
-Your hierarchical multi-agent system is now deployed!
-
-**Next Steps**:
-1. Test with various financial queries
-2. Monitor agent performance
-3. Adjust supervisor routing logic as needed
-4. Add more specialist agents if required
-
-
-
-
-# Software Installation Instructions and Structure
-
-<img width="733" height="278" alt="image" src="https://github.com/user-attachments/assets/4fda9e39-7733-47eb-8831-fc65568d05dd" />
-
-## Summary of Modular Structure:
-### Benefits of this structure:
-
-1. Easy Debugging 🐛
-
-** Problem with financial data? → Check services/financial_data.py
-** Britive issues? → Check services/britive_client.py
-** Agent not responding? → Check services/agentcore_client.py
-** API errors? → Check routes/api.py
-
-2. Easy Updates 🔄
-
-** Want to change styling? → Edit static/css/styles.css
-** Need to add API endpoint? → Edit routes/api.py
-New agent logic? → Edit services/agentcore_client.py
-
-3. Testable ✅
-
-** Each service can be unit tested independently
-** Mock external dependencies easily
-
-
-4. Scalable 📈
-
-** Add new agents by extending agentcore_client.py
-** Add new data sources in financial_data.py
-** Add new routes in routes/
-
-
-
-### How to Set It Up:
-
-<pre>
-1. Run the setup script (creates all directories and files):
-
-bash   
-  bash setup.sh
-
-2. Copy code from the 3 artifacts I created:
-
-Artifact 1: "Modular FinOps App Structure" → Copy to Python files
-Artifact 2: "Frontend Files" → Copy to HTML/CSS/JS files
-Artifact 3: "Setup Guide" → Reference for commands
-
-
-3. Install and run:
-
-bash   
-   cd finops_app
-   pip install -r requirements.txt
-   python app.py
-</pre>
+MIT License

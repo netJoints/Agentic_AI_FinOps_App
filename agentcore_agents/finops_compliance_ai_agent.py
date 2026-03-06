@@ -208,7 +208,7 @@ def analyze_compliance_reports() -> str:
 def create_agent():
     """Create the Compliance Agent"""
     bedrock_model = BedrockModel(
-        model_id="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        model_id="us.anthropic.claude-sonnet-4-5-20250929-v1:0",
         temperature=0.0,
     )
     
@@ -234,7 +234,13 @@ You have access to real compliance reports stored in S3. Always retrieve the lat
     return agent
 
 # Create the agent instance
-agent = create_agent()
+_agent = None
+
+def get_agent():
+    global _agent
+    if _agent is None:
+        _agent = create_agent()
+    return _agent
 
 # Define the entrypoint for AgentCore
 @app.entrypoint
@@ -244,7 +250,7 @@ def invoke(payload):
         user_message = payload.get("inputText") or payload.get("prompt", "No prompt provided")
         logger.info(f"📥 Received compliance query: {user_message[:100]}...")
         
-        result = agent(user_message)
+        result = get_agent()(user_message)
         return {"result": result.message}
         
     except Exception as e:

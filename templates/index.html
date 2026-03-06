@@ -1,21 +1,225 @@
-<!-- ============================================ -->
-<!-- templates/index.html -->
-<!-- ============================================ -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance AI Multi-Agent System</title>
+    <title>FinOps AI Multi-Agent System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* Log Viewer Styles */
+        .log-viewer {
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+
+        .log-header {
+            padding: 15px 20px;
+            background: #16213e;
+            border-bottom: 1px solid #2a2a3e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .log-header:hover {
+            background: #1a2847;
+        }
+
+        .log-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .log-icon {
+            color: #4ecca3;
+            font-size: 20px;
+        }
+
+        .log-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .log-count {
+            background: #0a0a0a;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        .log-chevron {
+            transition: transform 0.3s;
+            color: #a0a0a0;
+        }
+
+        .log-chevron.expanded {
+            transform: rotate(180deg);
+        }
+
+        .log-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .log-content.expanded {
+            max-height: 600px;
+        }
+
+        .log-controls {
+            padding: 12px 20px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #2a2a3e;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-button {
+            background: #16213e;
+            border: 1px solid #2a2a3e;
+            color: #e0e0e0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .log-button:hover {
+            background: #1a2847;
+            border-color: #4ecca3;
+        }
+
+        .log-button.active {
+            background: #4ecca3;
+            color: #0a0a0a;
+            border-color: #4ecca3;
+        }
+
+        .auto-scroll-label {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #a0a0a0;
+            cursor: pointer;
+        }
+
+        .log-list {
+            height: 400px;
+            overflow-y: auto;
+            background: #000000;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 10px;
+        }
+
+        .log-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-list::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        .log-list::-webkit-scrollbar-thumb {
+            background: #2a2a3e;
+            border-radius: 4px;
+        }
+
+        .log-list::-webkit-scrollbar-thumb:hover {
+            background: #3a3a4e;
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .log-entry:hover {
+            background: #1a1a2e;
+        }
+
+        .log-entry.ERROR {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .log-entry.WARNING {
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .log-entry.INFO {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .log-entry.DEBUG {
+            background: rgba(107, 114, 128, 0.1);
+        }
+
+        .log-time {
+            color: #6b7280;
+            margin-right: 10px;
+        }
+
+        .log-level {
+            font-weight: bold;
+            margin-right: 10px;
+            display: inline-block;
+            width: 70px;
+        }
+
+        .log-level.ERROR { color: #ef4444; }
+        .log-level.WARNING { color: #fbbf24; }
+        .log-level.INFO { color: #3b82f6; }
+        .log-level.DEBUG { color: #6b7280; }
+
+        .log-logger {
+            color: #9ca3af;
+            margin-right: 10px;
+            max-width: 200px;
+            display: inline-block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .log-message {
+            color: #e5e7eb;
+        }
+
+        .log-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6b7280;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏦 Finance AI Multi-Agent System</h1>
+            <h1>🏦 FinOps AI Multi-Agent System</h1>
             <p>Powered by Amazon Bedrock AgentCore with Real-Time Financial Data</p>
         </div>
         
+        <!-- Dashboard Cards -->
         <div class="dashboard" id="dashboard">
             <div class="stat-card">
                 <h3>📈 Stock Price (AAPL)</h3>
@@ -39,16 +243,25 @@
             </div>
         </div>
         
+        <!-- Query Input Card -->
         <div class="card">
             <div class="input-section">
                 <textarea id="queryInput" placeholder="Enter your financial analysis query..."></textarea>
                 
                 <div class="examples">
                     <h3>💡 Example queries:</h3>
-                    <span class="example-query" onclick="setQuery('We noticed some unusual activity in our recent transactions. Can you analyze them for potential fraud patterns?')">🔍 Analyze suspicious transactions</span>
-                    <span class="example-query" onclick="setQuery('Our audit is coming up next month. Can you check if we are compliant with SOX, PCI-DSS, and AML regulations?')">✅ Check compliance status</span>
-                    <span class="example-query" onclick="setQuery('I just invested $100k - 60% went into SPY, 30% into AVGO, and 10% into Cisco stock. Can you tell me what my Value at Risk is for one month?')">📊 Calculate portfolio risk</span>
-                    <span class="example-query" onclick="setQuery('My client has a $250,000 portfolio with mixed equities and bonds. What are the key fraud risk indicators we should monitor?')">⚠️ Fraud risk assessment</span>
+                    <span class="example-query" onclick="setQuery('We noticed some unusual activity in our recent transactions. Can you analyze them for potential fraud patterns?')">
+                        🔍 Analyze suspicious transactions
+                    </span>
+                    <span class="example-query" onclick="setQuery('Our audit is coming up next month. Can you check if we are compliant with SOX, PCI-DSS, and AML regulations?')">
+                        ✅ Check compliance status
+                    </span>
+                    <span class="example-query" onclick="setQuery('I just invested $100k - 60% went into SPY, 30% into AVGO, and 10% into Cisco stock. Can you tell me what my Value at Risk is for one month?')">
+                        📊 Calculate portfolio risk
+                    </span>
+                    <span class="example-query" onclick="setQuery('My client has a $250,000 portfolio with mixed equities and bonds. What are the key fraud risk indicators we should monitor?')">
+                        ⚠️ Fraud risk assessment
+                    </span>
                 </div>
                 
                 <div class="session-info">
@@ -67,6 +280,7 @@
             </div>
         </div>
         
+        <!-- Response Section -->
         <div class="card response-section" id="responseSection">
             <div class="response-header">
                 <div class="response-title">📊 Analysis Results</div>
@@ -75,12 +289,184 @@
             <div class="response-content" id="responseContent"></div>
         </div>
         
+        <!-- Loading Section -->
         <div class="card loading" id="loadingSection" style="display: none;">
             <div class="spinner"></div>
             <p>Analyzing with AI agents and real-time data...</p>
         </div>
+
+        <!-- Log Viewer Component -->
+        <div class="log-viewer">
+            <div class="log-header" onclick="toggleLogs()">
+                <div class="log-header-left">
+                    <span class="log-icon">⚡</span>
+                    <span class="log-title">System Logs</span>
+                    <span class="log-count" id="logCount">0 entries</span>
+                </div>
+                <span class="log-chevron" id="logChevron">▼</span>
+            </div>
+
+            <div class="log-content" id="logContent">
+                <div class="log-controls">
+                    <button class="log-button" id="pauseBtn" onclick="togglePause()">
+                        <span id="pauseIcon">⏸</span>
+                        <span id="pauseText">Pause</span>
+                    </button>
+                    <button class="log-button" onclick="clearLogs()">
+                        🗑️ Clear
+                    </button>
+                    <button class="log-button" onclick="downloadLogs()">
+                        ⬇️ Download
+                    </button>
+                    <label class="auto-scroll-label">
+                        <input type="checkbox" id="autoScroll" checked>
+                        Auto-scroll
+                    </label>
+                </div>
+
+                <div class="log-list" id="logList">
+                    <div class="log-empty">No logs yet...</div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Log Viewer JavaScript
+        let logs = [];
+        let isPaused = false;
+        let isExpanded = false;
+        let autoScroll = true;
+        let pollInterval = null;
+
+        function toggleLogs() {
+            isExpanded = !isExpanded;
+            const content = document.getElementById('logContent');
+            const chevron = document.getElementById('logChevron');
+            
+            if (isExpanded) {
+                content.classList.add('expanded');
+                chevron.classList.add('expanded');
+                startPolling();
+            } else {
+                content.classList.remove('expanded');
+                chevron.classList.remove('expanded');
+                stopPolling();
+            }
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseBtn');
+            const icon = document.getElementById('pauseIcon');
+            const text = document.getElementById('pauseText');
+            
+            if (isPaused) {
+                btn.classList.add('active');
+                icon.textContent = '▶️';
+                text.textContent = 'Resume';
+                stopPolling();
+            } else {
+                btn.classList.remove('active');
+                icon.textContent = '⏸';
+                text.textContent = 'Pause';
+                startPolling();
+            }
+        }
+
+        function clearLogs() {
+            logs = [];
+            renderLogs();
+        }
+
+        function downloadLogs() {
+            const logText = logs.map(log => log.message).join('\n');
+            const blob = new Blob([logText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `logs-${new Date().toISOString()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function startPolling() {
+            if (pollInterval) return;
+            fetchLogs();
+            pollInterval = setInterval(fetchLogs, 2000);
+        }
+
+        function stopPolling() {
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
+        }
+
+        async function fetchLogs() {
+            if (isPaused) return;
+            
+            try {
+                const response = await fetch('/api/logs?limit=100');
+                const data = await response.json();
+                logs = data.logs || [];
+                renderLogs();
+            } catch (error) {
+                console.error('Error fetching logs:', error);
+            }
+        }
+
+        function renderLogs() {
+            const logList = document.getElementById('logList');
+            const logCount = document.getElementById('logCount');
+            
+            logCount.textContent = `${logs.length} entries`;
+            
+            if (logs.length === 0) {
+                logList.innerHTML = '<div class="log-empty">No logs yet...</div>';
+                return;
+            }
+            
+            const logsHtml = logs.map(log => {
+                const time = new Date(log.timestamp).toLocaleTimeString();
+                return `
+                    <div class="log-entry ${log.level}">
+                        <span class="log-time">${time}</span>
+                        <span class="log-level ${log.level}">${log.level}</span>
+                        <span class="log-logger">${log.logger}</span>
+                        <span class="log-message">${escapeHtml(log.message)}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            logList.innerHTML = logsHtml;
+            
+            if (autoScroll) {
+                logList.scrollTop = logList.scrollHeight;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto-scroll checkbox
+        document.getElementById('autoScroll').addEventListener('change', (e) => {
+            autoScroll = e.target.checked;
+        });
+
+        // Detect manual scroll
+        document.getElementById('logList').addEventListener('scroll', (e) => {
+            const el = e.target;
+            const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+            if (!isAtBottom && autoScroll) {
+                document.getElementById('autoScroll').checked = false;
+                autoScroll = false;
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,90 +1,125 @@
 # ============================================
-# config.py - Configuration
+# config.py - Configuration (Enhanced - Backwards Compatible)
 # ============================================
 import os
-from datetime import timedelta
 
 class Config:
     """Application configuration"""
     
     # Flask settings
-    DEBUG = True
+    DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     HOST = '0.0.0.0'
-    PORT = 5011
+    PORT = int(os.environ.get('PORT', 5011))
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     
     # AWS settings
-    AWS_REGION = 'us-west-2'
-    AWS_ACCOUNT_ID = '513826297540'
-    
-    # Britive settings
-    BRITIVE_PROFILE = "aws_standalone_app_513826297540/513826297540 (aws_standalone_app_513826297540_environment)/FinOps Agentic AI Agent"
-    BRITIVE_TENANT = "agentic-ai"
-    
-    # AgentCore Agent Configuration
-    # Populated from .bedrock_agentcore.yaml
-    AGENTS = {
-        "supervisor": {
-            "agent_id": os.environ.get("SUPERVISOR_AGENT_ID", "finops_supervisor_ai_agent-QJhB67D4O4"),
-            "agent_arn": "arn:aws:bedrock-agentcore:us-west-2:513826297540:runtime/finops_supervisor_ai_agent-QJhB67D4O4",
-            "session_id": "74514430-a5c6-4a86-b00f-48760d6cb8d3"
+    AWS_REGION = os.environ.get('AWS_REGION', 'us-west-2')
+    AWS_ACCOUNT_ID = os.environ.get('AWS_ACCOUNT_ID', '')
+
+    # Britive settings (legacy - maintained for backwards compatibility)
+    BRITIVE_PROFILE = os.environ.get('BRITIVE_PROFILE', '')
+    BRITIVE_TENANT = os.environ.get('BRITIVE_TENANT', '')
+    BRITIVE_REGION = os.environ.get('BRITIVE_REGION', 'us-west-2')
+
+    # NEW: Agent-specific Britive profiles
+    # Maps agent names to their specific Britive profiles
+    BRITIVE_PROFILES = {
+        'supervisor': {
+            'profile': os.environ.get('BRITIVE_PROFILE_SUPERVISOR', ''),
+            'tenant': os.environ.get('BRITIVE_TENANT', ''),
+            'description': 'Supervisor agent - coordinates other agents'
         },
-        "fraud_detection": {
-            "agent_id": os.environ.get("FRAUD_AGENT_ID", "finops_fraud_ai_agent-cTzcGF6lW7"),
-            "agent_arn": "arn:aws:bedrock-agentcore:us-west-2:513826297540:runtime/finops_fraud_ai_agent-cTzcGF6lW7",
-            "session_id": "8cb2450a-32d0-4eea-b306-e78d4eee9f68"
+        'fraud_detection': {
+            'profile': os.environ.get('BRITIVE_PROFILE_FRAUD', ''),
+            'tenant': os.environ.get('BRITIVE_TENANT', ''),
+            'description': 'Fraud detection specialist'
         },
-        "compliance": {
-            "agent_id": os.environ.get("COMPLIANCE_AGENT_ID", "finops_compliance_ai_agent-lCD0fT7TCE"),
-            "agent_arn": "arn:aws:bedrock-agentcore:us-west-2:513826297540:runtime/finops_compliance_ai_agent-lCD0fT7TCE",
-            "session_id": "20d20a9d-de17-4801-be95-fe32b91e342b"
+        'compliance': {
+            'profile': os.environ.get('BRITIVE_PROFILE_COMPLIANCE', ''),
+            'tenant': os.environ.get('BRITIVE_TENANT', ''),
+            'description': 'Compliance and regulatory checks'
         },
-        "risk_analysis": {
-            "agent_id": os.environ.get("RISK_AGENT_ID", "finops_risk_ai_agent-W2U22y3F6H"),
-            "agent_arn": "arn:aws:bedrock-agentcore:us-west-2:513826297540:runtime/finops_risk_ai_agent-W2U22y3F6H",
-            "session_id": "4d58b052-baf6-4f9f-b1ea-a9961baa06ae"
+        'risk_analysis': {
+            'profile': os.environ.get('BRITIVE_PROFILE_RISK', ''),
+            'tenant': os.environ.get('BRITIVE_TENANT', ''),
+            'description': 'Risk assessment and analysis'
         }
     }
     
-    # Execution Role
-    BEDROCK_EXECUTION_ROLE = "arn:aws:iam::513826297540:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-shahzad"
-    
-    # API Keys (optional - yfinance is free!)
-    API_KEYS = {
-        "finnhub": os.environ.get("FINNHUB_API_KEY", "demo"),
-        "twelve_data": os.environ.get("TWELVE_DATA_API_KEY", "demo")
+    # Default profile if agent not found in mapping
+    BRITIVE_DEFAULT_PROFILE = {
+        'profile': BRITIVE_PROFILE,  # Use legacy profile as default
+        'tenant': BRITIVE_TENANT,
+        'description': 'Default fallback profile'
     }
     
-    # Data refresh intervals
+    # AgentCore Agent Configuration
+    # These use the Bedrock AgentCore Runtime ARNs - set all values via .env
+    AGENTS = {
+        "supervisor": {
+            "agent_id": os.environ.get("SUPERVISOR_AGENT_ID", ""),
+            "agent_arn": os.environ.get("SUPERVISOR_AGENT_ARN", ""),
+        },
+        "fraud_detection": {
+            "agent_id": os.environ.get("FRAUD_AGENT_ID", ""),
+            "agent_arn": os.environ.get("FRAUD_AGENT_ARN", ""),
+        },
+        "compliance": {
+            "agent_id": os.environ.get("COMPLIANCE_AGENT_ID", ""),
+            "agent_arn": os.environ.get("COMPLIANCE_AGENT_ARN", ""),
+        },
+        "risk_analysis": {
+            "agent_id": os.environ.get("RISK_AGENT_ID", ""),
+            "agent_arn": os.environ.get("RISK_AGENT_ARN", ""),
+        }
+    }
+
+    # Execution Role
+    BEDROCK_EXECUTION_ROLE = os.environ.get('BEDROCK_EXECUTION_ROLE', '')
+    
+    # Data refresh intervals (UNCHANGED)
     DASHBOARD_REFRESH_INTERVAL = 30  # seconds
     
-    # Transaction settings
+    # Transaction settings (UNCHANGED)
     DEFAULT_TRANSACTION_COUNT = 10
     FRAUD_THRESHOLD = 0.7
-
-
-# ============================================
-# Project Structure
-# ============================================
-"""
-finops_app/
-├── app.py                      # Main Flask application
-├── config.py                   # Configuration and constants
-├── services/
-│   ├── __init__.py
-│   ├── financial_data.py       # Financial data fetching service
-│   ├── britive_client.py       # Britive credential management
-│   └── agentcore_client.py     # AgentCore agent invocation
-├── routes/
-│   ├── __init__.py
-│   ├── api.py                  # API endpoints
-│   └── views.py                # Web views
-├── templates/
-│   └── index.html              # HTML template
-├── static/
-│   ├── css/
-│   │   └── styles.css          # Styles
-│   └── js/
-│       └── main.js             # Frontend JavaScript
-└── requirements.txt            # Dependencies
-"""
+    
+    # EXISTING METHODS (UNCHANGED - working as-is)
+    @classmethod
+    def is_agent_configured(cls, agent_type: str) -> bool:
+        """Check if an agent is properly configured"""
+        agent = cls.AGENTS.get(agent_type, {})
+        agent_id = agent.get("agent_id", "")
+        return agent_id and not agent_id.startswith("YOUR_")
+    
+    @classmethod
+    def get_all_configured_agents(cls) -> list:
+        """Return list of all configured agent names"""
+        return [name for name in cls.AGENTS.keys() if cls.is_agent_configured(name)]
+    
+    # NEW METHODS (added for Britive profile management)
+    @classmethod
+    def get_britive_profile(cls, agent_name: str) -> dict:
+        """
+        Get Britive profile configuration for a specific agent.
+        
+        Args:
+            agent_name: Name of the agent
+            
+        Returns:
+            dict: Profile configuration with 'profile', 'tenant', and 'description'
+        """
+        return cls.BRITIVE_PROFILES.get(agent_name, cls.BRITIVE_DEFAULT_PROFILE)
+    
+    @classmethod
+    def get_agent_britive_info(cls) -> dict:
+        """
+        Get information about Britive profiles for all agents.
+        
+        Returns:
+            dict: Agent names mapped to their profile descriptions
+        """
+        return {
+            name: config['description'] 
+            for name, config in cls.BRITIVE_PROFILES.items()
+        }

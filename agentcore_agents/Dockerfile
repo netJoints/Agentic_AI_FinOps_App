@@ -34,4 +34,4 @@ COPY . .
 
 # Use the full module path
 
-CMD ["opentelemetry-instrument", "python", "-m", "finops_compliance_ai_agent"]
+CMD ["opentelemetry-instrument", "python", "-m", "finops_risk_ai_agent"]

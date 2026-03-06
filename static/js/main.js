@@ -1,9 +1,9 @@
 // ============================================
-// static/js/main.js - Fixed Version with Proper Rendering
+// static/js/main.js - Frontend JavaScript
 // ============================================
 
 // Generate unique session ID
-const sessionId = 'session-' + Date.now();
+const sessionId = 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load dashboard data
     loadDashboard();
     
-    // Set up Enter key handler
+    // Set up Enter key handler for textarea
     document.getElementById('queryInput').addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -25,22 +25,29 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(loadDashboard, 30000);
 });
 
+/**
+ * Set query text in the input field
+ */
 function setQuery(query) {
     document.getElementById('queryInput').value = query;
-    // Optional: focus the textarea
     document.getElementById('queryInput').focus();
 }
 
+/**
+ * Load dashboard data from API
+ */
 async function loadDashboard() {
     try {
         // Load stock data
         const stockResp = await fetch('/api/financial-data?type=stock&symbol=AAPL');
         const stockData = await stockResp.json();
         
-        document.getElementById('stockPrice').textContent = '$' + (stockData.price || 0).toFixed(2);
-        const changeClass = stockData.change >= 0 ? 'positive' : 'negative';
-        document.getElementById('stockChange').textContent = stockData.change_percent || 'N/A';
-        document.getElementById('stockChange').className = 'change ' + changeClass;
+        if (stockData.price) {
+            document.getElementById('stockPrice').textContent = '$' + stockData.price.toFixed(2);
+            const changeClass = stockData.change >= 0 ? 'positive' : 'negative';
+            document.getElementById('stockChange').textContent = stockData.change_percent || 'N/A';
+            document.getElementById('stockChange').className = 'change ' + changeClass;
+        }
         
         // Load transaction data
         const txnResp = await fetch('/api/financial-data?type=transactions');
@@ -63,18 +70,14 @@ async function loadDashboard() {
     }
 }
 
+/**
+ * Format response text with proper HTML
+ */
 function formatResponse(responseText) {
-    /**
-     * Format the response text by:
-     * 1. Unescaping newlines and unicode characters
-     * 2. Converting markdown to HTML
-     * 3. Preserving whitespace and formatting
-     */
-    
-    // First, try to parse if it's a JSON string
     let text = responseText;
+    
+    // Try to parse if it's a JSON string
     try {
-        // Check if it's wrapped in quotes (JSON string)
         if (text.startsWith('"') && text.endsWith('"')) {
             text = JSON.parse(text);
         }
@@ -98,19 +101,28 @@ function formatResponse(responseText) {
     // Convert markdown bold
     text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     
+    // Convert markdown italic
+    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    
     // Convert markdown lists
     text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
     text = text.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
     
-    // Convert newlines to <br> tags (but not inside HTML tags)
+    // Convert horizontal rules
+    text = text.replace(/^---$/gm, '<hr>');
+    
+    // Convert newlines to <br> tags
     text = text.replace(/\n/g, '<br>');
     
-    // Clean up any double breaks
-    text = text.replace(/<br><br>/g, '<br>');
+    // Clean up multiple breaks
+    text = text.replace(/<br><br><br>/g, '<br><br>');
     
     return text;
 }
 
+/**
+ * Submit query to AI agents for analysis
+ */
 async function analyzeQuery() {
     const query = document.getElementById('queryInput').value.trim();
     
@@ -123,6 +135,7 @@ async function analyzeQuery() {
     document.getElementById('loadingSection').style.display = 'block';
     document.getElementById('responseSection').style.display = 'none';
     document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('analyzeBtn').textContent = '⏳ Analyzing...';
     
     try {
         const response = await fetch('/api/analyze', {
@@ -146,21 +159,30 @@ async function analyzeQuery() {
             const formattedResponse = formatResponse(data.response);
             document.getElementById('responseContent').innerHTML = formattedResponse;
             document.getElementById('agentsBadge').textContent = 
-                data.agents_invoked.length + ' agents invoked';
+                data.agents_invoked.length + ' agent(s) invoked: ' + data.agents_invoked.join(', ');
             document.getElementById('responseSection').style.display = 'block';
+            
+            // Scroll to results
+            document.getElementById('responseSection').scrollIntoView({ behavior: 'smooth' });
         } else {
             alert('Error: ' + (data.error || 'Unknown error occurred'));
         }
         
     } catch (error) {
         document.getElementById('loadingSection').style.display = 'none';
+        console.error('Analysis error:', error);
         alert('Error: ' + error.message);
     } finally {
         document.getElementById('analyzeBtn').disabled = false;
+        document.getElementById('analyzeBtn').textContent = '🚀 Analyze with AI Agents';
     }
 }
 
+/**
+ * Clear results and input
+ */
 function clearResults() {
     document.getElementById('queryInput').value = '';
     document.getElementById('responseSection').style.display = 'none';
+    document.getElementById('queryInput').focus();
 }
