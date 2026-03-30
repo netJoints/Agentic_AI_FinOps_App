@@ -26,11 +26,9 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$AWS_
   exit 1
 fi
 
-# Step 4: Define variables for supervisor agent
+# Step 4: Define variables for the risk agent
 RISK_AGENT_NAME="finops_risk_ai_agent"
 RISK_AGENT_ENTRYPOINT="finops_risk_ai_agent.py"
-# Set BEDROCK_EXECUTION_ROLE env var before running this script
-# e.g. export BEDROCK_EXECUTION_ROLE="arn:aws:iam::123456789012:role/service-role/AmazonBedrockAgentCoreRuntimeServiceRole-yourname"
 EXECUTION_ROLE="${BEDROCK_EXECUTION_ROLE}"
 REQUIREMENTS_FILE="requirements.txt"
 
@@ -43,7 +41,7 @@ agentcore configure \
   --requirements-file "$REQUIREMENTS_FILE" \
   --verbose
 
-# Step 6: Launch the agent with environment variables and auto-update
+# Step 6: Launch the agent
 echo "🚀 Launching agentcore..."
 agentcore deploy \
   --agent "$RISK_AGENT_NAME" \

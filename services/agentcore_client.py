@@ -17,6 +17,7 @@ import boto3
 import logging
 from config import Config
 from .financial_data import FinancialDataService
+from .britive_helper import checkout_credentials_for_agent
 
 logger = logging.getLogger(__name__)
 
@@ -199,17 +200,30 @@ class AgentCoreClient:
         agent_arn = agent_config["agent_arn"]
         logger.info(f"📍 Agent ARN: {agent_arn}")
         logger.info(f"📍 Session ID: {session_id}")
-        
+
         # Enrich query with relevant data
         enriched_query = self._enrich_query_with_data(query, agent_type)
         logger.info(f"📤 Query length: {len(enriched_query)} chars")
-        
+
+        # Checkout this agent's specific Britive profile (runs locally, browser auth if needed)
+        britive_client = checkout_credentials_for_agent(agent_type)
+        if britive_client:
+            logger.info(f"✅ Using {agent_type}-specific Britive credentials")
+            invoke_client = britive_client.get_boto_session().client(
+                'bedrock-agentcore',
+                region_name=Config.AWS_REGION,
+                endpoint_url=f'https://bedrock-agentcore.{Config.AWS_REGION}.amazonaws.com'
+            )
+        else:
+            logger.warning(f"⚠️ Could not checkout {agent_type} profile, falling back to supervisor credentials")
+            invoke_client = self.client
+
         try:
             # Prepare payload
             payload_data = {"inputText": enriched_query}
-            
+
             # Invoke the agent using AgentCore Runtime API
-            response = self.client.invoke_agent_runtime(
+            response = invoke_client.invoke_agent_runtime(
                 agentRuntimeArn=agent_arn,
                 runtimeSessionId=session_id,
                 payload=json.dumps(payload_data).encode('utf-8'),
@@ -255,7 +269,11 @@ class AgentCoreClient:
                 "error": str(e),
                 "agent": agent_type
             }
-    
+        finally:
+            if britive_client:
+                logger.info(f"🔓 Checking in {agent_type} Britive credentials")
+                britive_client.checkin()
+
     def _parse_response(self, response: Dict) -> str:
         """
         Parse the AgentCore response and extract the text content.

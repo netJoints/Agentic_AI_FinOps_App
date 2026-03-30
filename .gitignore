@@ -6,6 +6,9 @@
 # AWS AgentCore generated config - contains account IDs and resource ARNs
 agentcore_agents/.bedrock_agentcore.yaml
 
+# AWS AgentCore build artifacts - large binary dependency zips, not source code
+agentcore_agents/.bedrock_agentcore/
+
 # Python
 __pycache__/
 *.pyc

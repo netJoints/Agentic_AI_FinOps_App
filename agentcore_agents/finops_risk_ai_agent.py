@@ -32,12 +32,12 @@ def analyze_risk_reports() -> str:
     """
     try:
         logger.info(f"📥 Fetching risk reports from S3 bucket: {S3_BUCKET}")
-        
-        # Initialize S3 client (uses credentials from environment - set by Britive)
-        s3_client = boto3.client('s3', region_name='us-west-2')
-        
+
         reports = {}
-        
+
+        # Initialize S3 client (credentials provided by Britive via the Flask app at invocation time)
+        s3_client = boto3.client('s3', region_name='us-west-2')
+
         # Download each risk report
         for report_type, filename in RISK_FILES.items():
             try:

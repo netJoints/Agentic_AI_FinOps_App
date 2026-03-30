@@ -30,12 +30,12 @@ def analyze_compliance_reports() -> str:
     """
     try:
         logger.info(f"📥 Fetching compliance reports from S3 bucket: {S3_BUCKET}")
-        
-        # Initialize S3 client
-        s3_client = boto3.client('s3', region_name='us-west-2')
-        
+
         reports = {}
-        
+
+        # Initialize S3 client (credentials provided by Britive via the Flask app at invocation time)
+        s3_client = boto3.client('s3', region_name='us-west-2')
+
         # Download each compliance report
         for report_type, filename in COMPLIANCE_FILES.items():
             try:
